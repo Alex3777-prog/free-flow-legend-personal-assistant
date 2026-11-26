@@ -1,6 +1,6 @@
 from collections import UserDict
 from datetime import date, timedelta
-from .fields import Name, Phone, Birthday, DATE_FORMAT
+from .fields import Name, Phone, Birthday, Email, Address, DATE_FORMAT
 
 
 UPCOMING_DAYS = 7
@@ -12,6 +12,8 @@ class Record:
         self.name = Name(name)
         self.phones: list[Phone] = []
         self.birthday: Birthday | None = None
+        self.email: Email | None = None
+        self.address: Address | None = None
 
     def add_phone(self, phone: str) -> None:
         if self.find_phone(phone):
@@ -38,28 +40,110 @@ class Record:
     def add_birthday(self, birthday: str) -> None:
         self.birthday = Birthday(birthday)
 
+    def remove_birthday(self) -> None:
+        if self.birthday is None:
+            raise ValueError("Birthday is not specified.")
+        self.birthday = None
+
+    def add_email(self, email: str) -> None:
+        self.email = Email(email)
+
+    def edit_email(self, new_email: str) -> None:
+        self.email = Email(new_email)
+
+    def remove_email(self) -> None:
+        if self.email is None:
+            raise ValueError("Email is not specified.")
+        self.email = None
+
+    def add_address(self, address: str) -> None:
+        self.address = Address(address)
+
+    def edit_address(self, new_address: str) -> None:
+        self.address = Address(new_address)
+
+    def remove_address(self) -> None:
+        if self.address is None:
+            raise ValueError("Address is not specified.")
+        self.address = None
+
+    def matches(self, query: str) -> bool:
+        """Check if query partially matches name, phones, email, or address (case-insensitive)."""
+        q = query.strip().lower()
+        if not q:
+            return False
+
+        if q in self.name.value.lower():
+            return True
+        if any(q in p.value.lower() for p in self.phones):
+            return True
+        if self.email and q in self.email.value.lower():
+            return True
+        if self.address and q in self.address.value.lower():
+            return True
+
+        return False
+
     def __str__(self):
-        phones = "; ".join(p.value for p in self.phones)
+        phones = "; ".join(p.value for p in self.phones) or "not specified"
         birthday = self.birthday or "not specified"
+        email = self.email or "not specified"
+        address = self.address or "not specified"
         return (
             f"Contact name: {self.name.value}, "
-            f"phones: {phones}, birthday: {birthday}"
+            f"phones: {phones}, "
+            f"birthday: {birthday}, "
+            f"email: {email}, "
+            f"address: {address}"
         )
 
 
 class AddressBook(UserDict):
     def add_record(self, record: Record) -> None:
+        if self.find(record.name.value) is not None:
+            raise ValueError(f"Contact '{record.name.value}' already exists.")
         self.data[record.name.value] = record
 
     def find(self, name: str) -> Record | None:
-        return self.data.get(name)
+        # Exact match first, then case-insensitive fallback
+        if name in self.data:
+            return self.data[name]
+        name_lower = name.lower()
+        for key, record in self.data.items():
+            if key.lower() == name_lower:
+                return record
+        return None
 
-    def delete(self, name: str) -> None:
-        self.data.pop(name, None)
+    def delete(self, name: str) -> bool:
+        record = self.find(name)
+        if record is None:
+            return False
+        del self.data[record.name.value]
+        return True
+
+    def rename_record(self, old_name: str, new_name: str) -> None:
+        record = self.find(old_name)
+        if record is None:
+            raise KeyError(old_name)
+
+        validated_name = Name(new_name)
+        existing = self.find(validated_name.value)
+        if existing is not None and existing is not record:
+            raise ValueError(f"Contact '{validated_name.value}' already exists.")
+
+        del self.data[record.name.value]
+        record.name = validated_name
+        self.data[record.name.value] = record
+
+    def search(self, query: str) -> list[Record]:
+        return [record for record in self.data.values() if record.matches(query)]
 
     def get_upcoming_birthdays(
-        self, today: date | None = None
+        self, days: int = UPCOMING_DAYS, today: date | None = None
     ) -> list[dict[str, str]]:
+        if days < 1:
+            raise ValueError("Number of days must be a positive integer.")
+
         today = today or date.today()
         search_start = today - timedelta(days=WEEKEND_LOOKBACK_DAYS)
         upcoming = []
@@ -70,7 +154,7 @@ class AddressBook(UserDict):
 
             birthday = record.birthday.value.date()
             next_birthday = self._next_birthday(birthday, search_start)
-            if (next_birthday - today).days >= UPCOMING_DAYS:
+            if (next_birthday - today).days >= days:
                 continue
 
             greeting_date = self._shift_to_weekday(next_birthday)
