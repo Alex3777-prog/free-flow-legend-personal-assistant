@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from functools import wraps
 
 
@@ -29,3 +30,32 @@ def check_args(args: list[str], expected: int, usage: str) -> None:
     if len(args) != expected:
         raise ValueError(f"Invalid number of arguments. Usage: {usage}")
 
+
+def ask(
+    label: str,
+    validator: Callable[[str], object] | None = None,
+    required: bool = False,
+) -> str:
+    """Prompt until the user enters a valid value.
+
+    Empty input returns "" for optional fields and is asked again for required
+    ones. The validator must raise ValueError for invalid input; its return
+    value is ignored. KeyboardInterrupt and EOFError propagate to the caller.
+    """
+    while True:
+        value = input(f"{label}: ").strip()
+
+        if not value:
+            if not required:
+                return ""
+            print("This field is required.")
+            continue
+
+        if validator is not None:
+            try:
+                validator(value)
+            except ValueError as error:
+                print(error)
+                continue
+
+        return value
