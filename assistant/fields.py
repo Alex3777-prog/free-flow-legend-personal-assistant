@@ -3,7 +3,12 @@ from datetime import datetime
 
 
 DATE_FORMAT = "%d.%m.%Y"
-EMAIL_PATTERN = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+EMAIL_PATTERN = (
+    r"^[a-zA-Z0-9](?:[a-zA-Z0-9_.+-]*[a-zA-Z0-9])?"
+    r"@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?"
+    r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$"
+)
+
 
 class Field:
     def __init__(self, value):
@@ -41,7 +46,7 @@ class Birthday(Field):
     def __str__(self):
         return self.value.strftime(DATE_FORMAT)
 
-    
+
 class Email(Field):
     def __init__(self, value: str):
         value = value.strip()

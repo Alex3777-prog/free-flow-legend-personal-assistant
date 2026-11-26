@@ -1,5 +1,6 @@
 from .contacts import AddressBook, Record, UPCOMING_DAYS
-from .utils import input_error, check_args
+from .fields import Name, Address
+from .utils import input_error, check_args, ask
 
 
 def get_record(book: AddressBook, name: str) -> Record:
@@ -10,11 +11,25 @@ def get_record(book: AddressBook, name: str) -> Record:
     return record
 
 
+def parse_name_and_values(
+    args: list[str], trailing_count: int, usage: str
+) -> tuple[str, ...]:
+    """Extract multi-word contact name and `trailing_count` single-token values."""
+    if len(args) < trailing_count + 1:
+        raise ValueError(f"Invalid number of arguments. Usage: {usage}")
+
+    if trailing_count == 0:
+        return (" ".join(args),)
+
+    name = " ".join(args[:-trailing_count])
+    values = args[-trailing_count:]
+    return (name, *values)
+
+
 @input_error
 def add_contact(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "add <name> <phone>")
+    name, phone = parse_name_and_values(args, 1, "add <name> <phone>")
 
-    name, phone = args
     record = book.find(name)
     if record is None:
         record = Record(name)
@@ -28,27 +43,27 @@ def add_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_contact(args: list[str], book: AddressBook) -> str:
-    check_args(args, 3, "change <name> <old_phone> <new_phone>")
+    name, old_phone, new_phone = parse_name_and_values(
+        args, 2, "change <name> <old_phone> <new_phone>"
+    )
 
-    name, old_phone, new_phone = args
     get_record(book, name).edit_phone(old_phone, new_phone)
     return "Contact updated."
 
 
 @input_error
 def remove_phone(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "remove-phone <name> <phone>")
+    name, phone = parse_name_and_values(args, 1, "remove-phone <name> <phone>")
 
-    name, phone = args
     get_record(book, name).remove_phone(phone)
     return "Phone removed."
 
 
 @input_error
 def show_phone(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "phone <name>")
+    (name,) = parse_name_and_values(args, 0, "phone <name>")
 
-    record = get_record(book, args[0])
+    record = get_record(book, name)
     if not record.phones:
         return "No phones specified."
     phones = "; ".join(p.value for p in record.phones)
@@ -66,26 +81,30 @@ def show_all(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def delete_contact(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "delete <name>")
+    (name,) = parse_name_and_values(args, 0, "delete-contact <name>")
 
-    if not book.delete(args[0]):
-        raise KeyError(args[0])
+    if not book.delete(name):
+        raise ValueError("Contact not found.")
     return "Contact deleted."
 
 
 @input_error
 def rename_contact(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "rename <old_name> <new_name>")
+    (old_name,) = parse_name_and_values(args, 0, "rename-contact <old_name>")
 
-    old_name, new_name = args
-    book.rename_record(old_name, new_name)
+    record = book.find(old_name)
+    if record is None:
+        raise ValueError("Contact not found.")
+
+    new_name = ask("New name", validator=Name, required=True)
+    book.rename_record(record.name.value, new_name)
     return "Contact renamed."
 
 
 @input_error
 def search_contacts(args: list[str], book: AddressBook) -> str:
     if not args:
-        raise ValueError("Invalid number of arguments. Usage: search <query>")
+        raise ValueError("Invalid number of arguments. Usage: search-contact <query>")
 
     query = " ".join(args)
     results = book.search(query)
@@ -96,9 +115,10 @@ def search_contacts(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_birthday(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "add-birthday <name> <DD.MM.YYYY>")
+    name, birthday = parse_name_and_values(
+        args, 1, "add-birthday <name> <DD.MM.YYYY>"
+    )
 
-    name, birthday = args
     record = get_record(book, name)
     message = "Birthday updated." if record.birthday else "Birthday added."
     record.add_birthday(birthday)
@@ -107,17 +127,17 @@ def add_birthday(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_birthday(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "remove-birthday <name>")
+    (name,) = parse_name_and_values(args, 0, "remove-birthday <name>")
 
-    get_record(book, args[0]).remove_birthday()
+    get_record(book, name).remove_birthday()
     return "Birthday removed."
 
 
 @input_error
 def show_birthday(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "show-birthday <name>")
+    (name,) = parse_name_and_values(args, 0, "show-birthday <name>")
 
-    record = get_record(book, args[0])
+    record = get_record(book, name)
     if record.birthday is None:
         return "Birthday not specified."
     return f"{record.name.value}: {record.birthday}"
@@ -145,9 +165,8 @@ def birthdays(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_email(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "add-email <name> <email>")
+    name, email = parse_name_and_values(args, 1, "add-email <name> <email>")
 
-    name, email = args
     record = get_record(book, name)
     message = "Email updated." if record.email else "Email added."
     record.add_email(email)
@@ -156,9 +175,8 @@ def add_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_email(args: list[str], book: AddressBook) -> str:
-    check_args(args, 2, "change-email <name> <new_email>")
+    name, new_email = parse_name_and_values(args, 1, "change-email <name> <new_email>")
 
-    name, new_email = args
     record = get_record(book, name)
     if record.email is None:
         raise ValueError("Email is not specified. Use 'add-email' first.")
@@ -168,17 +186,17 @@ def change_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_email(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "remove-email <name>")
+    (name,) = parse_name_and_values(args, 0, "remove-email <name>")
 
-    get_record(book, args[0]).remove_email()
+    get_record(book, name).remove_email()
     return "Email removed."
 
 
 @input_error
 def show_email(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "show-email <name>")
+    (name,) = parse_name_and_values(args, 0, "show-email <name>")
 
-    record = get_record(book, args[0])
+    record = get_record(book, name)
     if record.email is None:
         return "Email not specified."
     return f"{record.name.value}: {record.email}"
@@ -186,12 +204,10 @@ def show_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_address(args: list[str], book: AddressBook) -> str:
-    if len(args) < 2:
-        raise ValueError("Invalid number of arguments. Usage: add-address <name> <address>")
+    (name,) = parse_name_and_values(args, 0, "add-address <name>")
 
-    name = args[0]
-    address = " ".join(args[1:])
     record = get_record(book, name)
+    address = ask("Address", validator=Address, required=True)
     message = "Address updated." if record.address else "Address added."
     record.add_address(address)
     return message
@@ -199,31 +215,29 @@ def add_address(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_address(args: list[str], book: AddressBook) -> str:
-    if len(args) < 2:
-        raise ValueError("Invalid number of arguments. Usage: change-address <name> <new_address>")
+    (name,) = parse_name_and_values(args, 0, "change-address <name>")
 
-    name = args[0]
-    new_address = " ".join(args[1:])
     record = get_record(book, name)
     if record.address is None:
         raise ValueError("Address is not specified. Use 'add-address' first.")
+    new_address = ask("Address", validator=Address, required=True)
     record.edit_address(new_address)
     return "Address updated."
 
 
 @input_error
 def remove_address(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "remove-address <name>")
+    (name,) = parse_name_and_values(args, 0, "remove-address <name>")
 
-    get_record(book, args[0]).remove_address()
+    get_record(book, name).remove_address()
     return "Address removed."
 
 
 @input_error
 def show_address(args: list[str], book: AddressBook) -> str:
-    check_args(args, 1, "show-address <name>")
+    (name,) = parse_name_and_values(args, 0, "show-address <name>")
 
-    record = get_record(book, args[0])
+    record = get_record(book, name)
     if record.address is None:
         return "Address not specified."
     return f"{record.name.value}: {record.address}"

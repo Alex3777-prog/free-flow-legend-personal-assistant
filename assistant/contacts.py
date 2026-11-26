@@ -1,10 +1,9 @@
 from collections import UserDict
-from datetime import date, timedelta
+from datetime import date
 from .fields import Name, Phone, Birthday, Email, Address, DATE_FORMAT
 
 
 UPCOMING_DAYS = 7
-WEEKEND_LOOKBACK_DAYS = 2
 
 
 class Record:
@@ -68,7 +67,7 @@ class Record:
         self.address = None
 
     def matches(self, query: str) -> bool:
-        """Check if query partially matches name, phones, email, or address (case-insensitive)."""
+        """Check if query partially matches name, phones, email, or address."""
         q = query.strip().lower()
         if not q:
             return False
@@ -105,7 +104,6 @@ class AddressBook(UserDict):
         self.data[record.name.value] = record
 
     def find(self, name: str) -> Record | None:
-        # Exact match first, then case-insensitive fallback
         if name in self.data:
             return self.data[name]
         name_lower = name.lower()
@@ -124,7 +122,7 @@ class AddressBook(UserDict):
     def rename_record(self, old_name: str, new_name: str) -> None:
         record = self.find(old_name)
         if record is None:
-            raise KeyError(old_name)
+            raise ValueError("Contact not found.")
 
         validated_name = Name(new_name)
         existing = self.find(validated_name.value)
@@ -145,7 +143,6 @@ class AddressBook(UserDict):
             raise ValueError("Number of days must be a positive integer.")
 
         today = today or date.today()
-        search_start = today - timedelta(days=WEEKEND_LOOKBACK_DAYS)
         upcoming = []
 
         for record in self.data.values():
@@ -153,20 +150,14 @@ class AddressBook(UserDict):
                 continue
 
             birthday = record.birthday.value.date()
-            next_birthday = self._next_birthday(birthday, search_start)
-            if (next_birthday - today).days >= days:
-                continue
-
-            greeting_date = self._shift_to_weekday(next_birthday)
-            if greeting_date < today:
-                continue
-
-            upcoming.append(
-                {
-                    "name": record.name.value,
-                    "congratulation_date": greeting_date.strftime(DATE_FORMAT),
-                }
-            )
+            next_birthday = self._next_birthday(birthday, today)
+            if 0 <= (next_birthday - today).days <= days:
+                upcoming.append(
+                    {
+                        "name": record.name.value,
+                        "congratulation_date": next_birthday.strftime(DATE_FORMAT),
+                    }
+                )
 
         return upcoming
 
@@ -183,10 +174,3 @@ class AddressBook(UserDict):
         if next_birthday < today:
             next_birthday = cls._birthday_in_year(birthday, today.year + 1)
         return next_birthday
-
-    @staticmethod
-    def _shift_to_weekday(day: date) -> date:
-        """Move Saturday and Sunday to the following Monday."""
-        if day.weekday() >= 5:
-            return day + timedelta(days=7 - day.weekday())
-        return day
