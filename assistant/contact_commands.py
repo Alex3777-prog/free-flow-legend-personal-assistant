@@ -48,7 +48,7 @@ def add_contact(args: list[str], book: AddressBook) -> str:
 @input_error
 def change_contact(args: list[str], book: AddressBook) -> str:
     name, old_phone, new_phone = parse_name_and_values(
-        args, 2, "change <name> <old_phone> <new_phone>"
+        args, 2, "change <name> <old> <new>"
     )
 
     get_record(book, name).edit_phone(old_phone, new_phone)
@@ -93,7 +93,7 @@ def delete_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def rename_contact(args: list[str], book: AddressBook) -> str:
-    (old_name,) = parse_name_and_values(args, 0, "rename-contact <old_name>")
+    (old_name,) = parse_name_and_values(args, 0, "rename-contact <name>")
 
     record = book.find(old_name)
     if record is None:
@@ -107,7 +107,9 @@ def rename_contact(args: list[str], book: AddressBook) -> str:
 @input_error
 def search_contacts(args: list[str], book: AddressBook) -> str:
     if not args:
-        raise ValueError("Invalid number of arguments. Usage: search-contact <query>")
+        raise ValueError(
+            "Invalid number of arguments. Usage: search-contact <query>"
+        )
 
     query = " ".join(args)
     results = book.search(query)
@@ -142,25 +144,30 @@ def show_birthday(args: list[str], book: AddressBook) -> str:
 
     record = get_record(book, name)
     if record.birthday is None:
-        return "Birthday not specified."
+        return "Birthday is not specified."
     return f"{record.name.value}: {record.birthday}"
 
 
 @input_error
 def birthdays(args: list[str], book: AddressBook) -> str:
     if len(args) > 1:
-        raise ValueError("Invalid number of arguments. Usage: birthdays [days]")
+        raise ValueError(
+            "Invalid number of arguments. Usage: birthdays [days]"
+        )
 
     days = UPCOMING_DAYS
     if len(args) == 1:
         try:
             days = int(args[0])
         except ValueError:
-            raise ValueError("Days must be an integer.") from None
+            raise ValueError(
+                "Number of days must be a positive integer."
+            ) from None
 
     upcoming = book.get_upcoming_birthdays(days=days)
     if not upcoming:
-        return f"No upcoming birthdays in the next {days} days."
+        unit = "day" if days == 1 else "days"
+        return f"No upcoming birthdays in the next {days} {unit}."
     return format_birthdays(upcoming)
 
 
@@ -176,7 +183,9 @@ def add_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_email(args: list[str], book: AddressBook) -> str:
-    name, new_email = parse_name_and_values(args, 1, "change-email <name> <new_email>")
+    name, new_email = parse_name_and_values(
+        args, 1, "change-email <name> <email>"
+    )
 
     record = get_record(book, name)
     if record.email is None:
@@ -199,7 +208,7 @@ def show_email(args: list[str], book: AddressBook) -> str:
 
     record = get_record(book, name)
     if record.email is None:
-        return "Email not specified."
+        return "Email is not specified."
     return f"{record.name.value}: {record.email}"
 
 
@@ -240,7 +249,7 @@ def show_address(args: list[str], book: AddressBook) -> str:
 
     record = get_record(book, name)
     if record.address is None:
-        return "Address not specified."
+        return "Address is not specified."
     return f"{record.name.value}: {record.address}"
 
 

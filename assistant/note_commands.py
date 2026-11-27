@@ -17,10 +17,10 @@ def get_note(raw_id: str, notebook: NoteBook) -> Note:
 @input_error
 def add_note(args: list[str], notebook: NoteBook) -> str:
     if not args:
-        raise ValueError("Note text cannot be empty.")
+        raise ValueError("Invalid number of arguments. Usage: add-note <text>")
     note_text = " ".join(args)
     note = notebook.add_note(note_text)
-    return f"Note added ID: {note.id}."
+    return f"Note {note.id} added."
 
 
 @input_error
@@ -33,7 +33,9 @@ def show_note(args: list[str], notebook: NoteBook) -> str:
 @input_error
 def edit_note(args: list[str], notebook: NoteBook) -> str:
     if len(args) < 2:
-        raise ValueError("Invalid arguments. Usage: edit-note <id> <new_text>")
+        raise ValueError(
+            "Invalid number of arguments. Usage: edit-note <id> <text>"
+        )
     note = get_note(args[0], notebook)
     new_text = " ".join(args[1:])
     note.edit_text(new_text)
@@ -59,7 +61,9 @@ def show_all_notes(args: list[str], notebook: NoteBook) -> str:
 @input_error
 def search_notes(args: list[str], notebook: NoteBook) -> str:
     if not args:
-        raise ValueError("Usage: search-notes <query>.")
+        raise ValueError(
+            "Invalid number of arguments. Usage: search-notes <query>"
+        )
     query = " ".join(args)
     results = notebook.search_by_text(query)
     if not results:

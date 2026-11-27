@@ -172,7 +172,7 @@ Commands are case-insensitive. Names can contain spaces and are not case-sensiti
 | Command | Description |
 |---|---|
 | `add <name> <phone>` | Add a new contact or an additional phone number |
-| `change <name> <old_phone> <new_phone>` | Replace an existing phone number |
+| `change <name> <old> <new>` | Replace an existing phone number |
 | `remove-phone <name> <phone>` | Remove a phone number |
 | `phone <name>` | Display a contact's phone numbers |
 | `all` | Display all contacts |
@@ -215,7 +215,7 @@ The address and the new name are entered on a separate line, because they can co
 |---|---|
 | `add-note <text>` | Create a new note |
 | `show-note <id>` | Display a note by its ID |
-| `edit-note <id> <new_text>` | Edit an existing note |
+| `edit-note <id> <text>` | Replace a note's text |
 | `delete-note <id>` | Delete a note |
 | `all-notes` | Display all notes |
 | `search-notes <query>` | Search notes by text |
