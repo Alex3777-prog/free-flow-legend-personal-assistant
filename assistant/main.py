@@ -26,6 +26,7 @@ from .contact_commands import (
 )
 from .note_commands import (
     add_note,
+    show_note,
     edit_note,
     delete_note,
     show_all_notes,
@@ -75,6 +76,7 @@ Address:
 
 Notes:
   add-note <text>                     Add a note
+  show-note <id>                      Show a note by its ID
   edit-note <id> <text>               Replace a note's text
   delete-note <id>                    Delete a note
   all-notes                           Show all notes
@@ -125,6 +127,7 @@ CONTACT_COMMANDS = {
 
 NOTE_COMMANDS = {
     "add-note": add_note,
+    "show-note": show_note,
     "edit-note": edit_note,
     "delete-note": delete_note,
     "all-notes": show_all_notes,
