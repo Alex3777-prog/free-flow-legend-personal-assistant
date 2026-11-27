@@ -107,9 +107,9 @@ def sort_notes_by_tag(args: list[str], notebook: NoteBook) -> str:
 
 def format_notes(notes: list[Note]) -> str:
     table = Table(box=box.ROUNDED, show_lines=True)
-    table.add_column("ID", style="bold cyan", overflow=True)
-    table.add_column("Text", overflow="fold")
-    table.add_column("Tags", style="yellow", overflow="fold")
+    table.add_column("ID", style="#67E8F9", overflow="fold")
+    table.add_column("Text", style="#E5E7EB", overflow="fold")
+    table.add_column("Tags", style="#FDE047", overflow="fold")
 
     for note in notes:
         tags_str = " ".join(f"#{tag}" for tag in note.tags) if note.tags else "-"
