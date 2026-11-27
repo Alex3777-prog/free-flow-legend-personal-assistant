@@ -1,3 +1,5 @@
+"""Shared helpers: error handling, input parsing, prompts, and rendering."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -19,6 +21,7 @@ def input_error(func):
 
 
 def parse_input(user_input: str) -> tuple[str, ...]:
+    """Split input into a lowercase command and its arguments."""
     parts = user_input.split()
     if not parts:
         return ("",)
@@ -62,10 +65,16 @@ def ask(
         return value
 
 
+# One console for all tables, so they adapt to the terminal width.
 console = Console()
 
 
 def render(renderable) -> str:
+    """Render a rich object, such as a table, to a string for printing.
+
+    Handlers return text and main.py prints it, so tables are captured
+    here instead of being printed directly.
+    """
     with console.capture() as capture:
         console.print(renderable)
     return capture.get().rstrip("\n")

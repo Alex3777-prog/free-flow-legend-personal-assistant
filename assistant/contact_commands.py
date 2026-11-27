@@ -1,3 +1,10 @@
+"""Command handlers for contacts.
+
+Each handler takes the command arguments and the AddressBook and returns
+the text to show. Names can contain spaces, so a handler takes its other
+values from the end of the arguments and the rest is the name.
+"""
+
 from rich import box
 from rich.table import Table
 from rich.text import Text
@@ -18,7 +25,11 @@ def get_record(book: AddressBook, name: str) -> Record:
 def parse_name_and_values(
     args: list[str], trailing_count: int, usage: str
 ) -> tuple[str, ...]:
-    """Split args into a multi-word name and `trailing_count` values."""
+    """Split args into a multi-word name and `trailing_count` values.
+
+    Example: ["Alex", "Smith", "0123456789"] with trailing_count=1
+    gives ("Alex Smith", "0123456789").
+    """
     if len(args) < trailing_count + 1:
         raise ValueError(f"Invalid number of arguments. Usage: {usage}")
 
@@ -32,6 +43,10 @@ def parse_name_and_values(
 
 @input_error
 def add_contact(args: list[str], book: AddressBook) -> str:
+    """Add a contact, or add a new phone to an existing one.
+
+    Command: add <name> <phone>
+    """
     name, phone = parse_name_and_values(args, 1, "add <name> <phone>")
 
     record = book.find(name)
@@ -47,6 +62,10 @@ def add_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_contact(args: list[str], book: AddressBook) -> str:
+    """Replace one of the contact's phone numbers.
+
+    Command: change <name> <old> <new>
+    """
     name, old_phone, new_phone = parse_name_and_values(
         args, 2, "change <name> <old> <new>"
     )
@@ -57,6 +76,10 @@ def change_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_phone(args: list[str], book: AddressBook) -> str:
+    """Remove a phone number from a contact.
+
+    Command: remove-phone <name> <phone>
+    """
     name, phone = parse_name_and_values(args, 1, "remove-phone <name> <phone>")
 
     get_record(book, name).remove_phone(phone)
@@ -65,6 +88,10 @@ def remove_phone(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def show_phone(args: list[str], book: AddressBook) -> str:
+    """Show the contact's phones as a table.
+
+    Command: phone <name>
+    """
     (name,) = parse_name_and_values(args, 0, "phone <name>")
 
     record = get_record(book, name)
@@ -75,6 +102,10 @@ def show_phone(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def show_all(args: list[str], book: AddressBook) -> str:
+    """Show all contacts as a table.
+
+    Command: all
+    """
     check_args(args, 0, "all")
 
     if not book:
@@ -84,6 +115,10 @@ def show_all(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def delete_contact(args: list[str], book: AddressBook) -> str:
+    """Delete a contact.
+
+    Command: delete-contact <name>
+    """
     (name,) = parse_name_and_values(args, 0, "delete-contact <name>")
 
     if not book.delete(name):
@@ -93,6 +128,10 @@ def delete_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def rename_contact(args: list[str], book: AddressBook) -> str:
+    """Ask for a new name and rename the contact.
+
+    Command: rename-contact <name>
+    """
     (old_name,) = parse_name_and_values(args, 0, "rename-contact <name>")
 
     record = get_record(book, old_name)
@@ -103,6 +142,10 @@ def rename_contact(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def search_contacts(args: list[str], book: AddressBook) -> str:
+    """Search contacts by name, phone, email, or address.
+
+    Command: search-contact <query>
+    """
     if not args:
         raise ValueError(
             "Invalid number of arguments. Usage: search-contact <query>"
@@ -117,6 +160,10 @@ def search_contacts(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_birthday(args: list[str], book: AddressBook) -> str:
+    """Add or update the contact's birthday.
+
+    Command: add-birthday <name> <DD.MM.YYYY>
+    """
     name, birthday = parse_name_and_values(
         args, 1, "add-birthday <name> <DD.MM.YYYY>"
     )
@@ -129,6 +176,10 @@ def add_birthday(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_birthday(args: list[str], book: AddressBook) -> str:
+    """Remove the contact's birthday.
+
+    Command: remove-birthday <name>
+    """
     (name,) = parse_name_and_values(args, 0, "remove-birthday <name>")
 
     get_record(book, name).remove_birthday()
@@ -137,6 +188,10 @@ def remove_birthday(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def show_birthday(args: list[str], book: AddressBook) -> str:
+    """Show the contact's birthday.
+
+    Command: show-birthday <name>
+    """
     (name,) = parse_name_and_values(args, 0, "show-birthday <name>")
 
     record = get_record(book, name)
@@ -147,6 +202,10 @@ def show_birthday(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def birthdays(args: list[str], book: AddressBook) -> str:
+    """Show birthdays in the next N days (7 by default).
+
+    Command: birthdays [days]
+    """
     if len(args) > 1:
         raise ValueError(
             "Invalid number of arguments. Usage: birthdays [days]"
@@ -170,6 +229,10 @@ def birthdays(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_email(args: list[str], book: AddressBook) -> str:
+    """Add or update the contact's email.
+
+    Command: add-email <name> <email>
+    """
     name, email = parse_name_and_values(args, 1, "add-email <name> <email>")
 
     record = get_record(book, name)
@@ -180,6 +243,10 @@ def add_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_email(args: list[str], book: AddressBook) -> str:
+    """Change the contact's existing email.
+
+    Command: change-email <name> <email>
+    """
     name, new_email = parse_name_and_values(
         args, 1, "change-email <name> <email>"
     )
@@ -193,6 +260,10 @@ def change_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_email(args: list[str], book: AddressBook) -> str:
+    """Remove the contact's email.
+
+    Command: remove-email <name>
+    """
     (name,) = parse_name_and_values(args, 0, "remove-email <name>")
 
     get_record(book, name).remove_email()
@@ -201,6 +272,10 @@ def remove_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def show_email(args: list[str], book: AddressBook) -> str:
+    """Show the contact's email.
+
+    Command: show-email <name>
+    """
     (name,) = parse_name_and_values(args, 0, "show-email <name>")
 
     record = get_record(book, name)
@@ -211,6 +286,10 @@ def show_email(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def add_address(args: list[str], book: AddressBook) -> str:
+    """Ask for an address and add or update it.
+
+    Command: add-address <name>
+    """
     (name,) = parse_name_and_values(args, 0, "add-address <name>")
 
     record = get_record(book, name)
@@ -222,6 +301,10 @@ def add_address(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def change_address(args: list[str], book: AddressBook) -> str:
+    """Ask for a new address and replace the old one.
+
+    Command: change-address <name>
+    """
     (name,) = parse_name_and_values(args, 0, "change-address <name>")
 
     record = get_record(book, name)
@@ -234,6 +317,10 @@ def change_address(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def remove_address(args: list[str], book: AddressBook) -> str:
+    """Remove the contact's address.
+
+    Command: remove-address <name>
+    """
     (name,) = parse_name_and_values(args, 0, "remove-address <name>")
 
     get_record(book, name).remove_address()
@@ -242,6 +329,10 @@ def remove_address(args: list[str], book: AddressBook) -> str:
 
 @input_error
 def show_address(args: list[str], book: AddressBook) -> str:
+    """Show the contact's address.
+
+    Command: show-address <name>
+    """
     (name,) = parse_name_and_values(args, 0, "show-address <name>")
 
     record = get_record(book, name)
@@ -251,6 +342,7 @@ def show_address(args: list[str], book: AddressBook) -> str:
 
 
 def format_contacts(records: list[Record]) -> str:
+    """Return contacts as a table with one row per contact."""
     table = Table(box=box.ROUNDED, show_lines=True)
     table.add_column("Name", style="bold cyan", overflow="fold")
     table.add_column("Phones", overflow="fold")
@@ -264,6 +356,7 @@ def format_contacts(records: list[Record]) -> str:
         email = str(record.email) if record.email else "-"
         address = str(record.address) if record.address else "-"
 
+        # Text() shows user input as is, so "[...]" is not read as markup.
         table.add_row(
             Text(record.name.value),
             Text(phones),
@@ -276,6 +369,7 @@ def format_contacts(records: list[Record]) -> str:
 
 
 def format_phones(record: Record) -> str:
+    """Return the contact's phones as a one-column table titled by name."""
     table = Table(
         title=Text(record.name.value), box=box.ROUNDED, show_lines=True
     )
@@ -288,6 +382,7 @@ def format_phones(record: Record) -> str:
 
 
 def format_birthdays(upcoming: list[dict[str, str]]) -> str:
+    """Return upcoming birthdays as a Name / Birthday table."""
     table = Table(box=box.ROUNDED, show_lines=True)
     table.add_column("Name", style="bold cyan", overflow="fold")
     table.add_column("Birthday", overflow="fold")
