@@ -246,11 +246,11 @@ def show_address(args: list[str], book: AddressBook) -> str:
 
 def format_contacts(records: list[Record]) -> str:
     table = Table(box=box.ROUNDED, show_lines=True)
-    table.add_column("Name", style="#67E8F9", overflow="fold")
-    table.add_column("Phones", style="#86EFAC", overflow="fold")
-    table.add_column("Birthday", style="#C4B5FD", overflow="fold")
-    table.add_column("Email", style="#FDE047", overflow="fold")
-    table.add_column("Address", style="bold cyan", overflow="fold")
+    table.add_column("Name", style="bold cyan", overflow="fold")
+    table.add_column("Phones", overflow="fold")
+    table.add_column("Birthday", overflow="fold")
+    table.add_column("Email", overflow="fold")
+    table.add_column("Address", overflow="fold")
 
     for record in records:
         phones = "\n".join(p.value for p in record.phones) or "-"
@@ -271,7 +271,7 @@ def format_contacts(records: list[Record]) -> str:
 
 def format_phones(record: Record) -> str:
     table = Table(title=Text(record.name.value), box=box.ROUNDED, show_lines=True)
-    table.add_column("Phones", style="#86EFAC", overflow="fold")
+    table.add_column("Phones", overflow="fold")
 
     for phone in record.phones:
         table.add_row(Text(phone.value))
@@ -281,8 +281,8 @@ def format_phones(record: Record) -> str:
 
 def format_birthdays(upcoming: list[dict[str, str]]) -> str:
     table = Table(box=box.ROUNDED, show_lines=True)
-    table.add_column("Name", style="#67E8F9", overflow="fold")
-    table.add_column("Birthday", style="#C4B5FD", overflow="fold")
+    table.add_column("Name", style="bold cyan", overflow="fold")
+    table.add_column("Birthday", overflow="fold")
 
     for user in upcoming:
         table.add_row(

@@ -68,7 +68,6 @@ def search_notes(args: list[str], notebook: NoteBook) -> str:
         return format_notes(results)
 
 
-
 @input_error
 def add_tag(args: list[str], notebook: NoteBook) -> str:
     check_args(args, 2, "add-tag <id> <tag>")
@@ -104,12 +103,11 @@ def sort_notes_by_tag(args: list[str], notebook: NoteBook) -> str:
         return format_notes(notebook.sort_by_tags())
 
 
-
 def format_notes(notes: list[Note]) -> str:
     table = Table(box=box.ROUNDED, show_lines=True)
-    table.add_column("ID", style="#67E8F9", overflow="fold")
-    table.add_column("Text", style="#E5E7EB", overflow="fold")
-    table.add_column("Tags", style="#FDE047", overflow="fold")
+    table.add_column("ID", style="bold cyan", overflow="fold")
+    table.add_column("Text", overflow="fold")
+    table.add_column("Tags", style="yellow", overflow="fold")
 
     for note in notes:
         tags_str = " ".join(f"#{tag}" for tag in note.tags) if note.tags else "-"
