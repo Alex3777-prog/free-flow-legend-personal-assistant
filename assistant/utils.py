@@ -3,15 +3,16 @@ from functools import wraps
 
 
 def input_error(func):
+    """Turn expected user errors raised by a handler into a message."""
+
     @wraps(func)
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except ValueError as error:
             return str(error)
-        except IndexError:
-            return "Enter user name."
         except KeyError:
+            # Raised by get_record() in contact_commands.py.
             return "Contact not found."
 
     return inner
