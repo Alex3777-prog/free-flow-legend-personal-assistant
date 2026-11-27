@@ -1,3 +1,4 @@
+import re
 from collections import UserDict
 
 class Note:
@@ -15,8 +16,6 @@ class Note:
 
     def add_tag(self, tag: str):
         normalized_tag = self.normalize_tag(tag)
-        if not normalized_tag:
-            raise ValueError("Tag name cannot be empty.")
         if normalized_tag in self.tags:
             raise ValueError("This tag is already assigned to the note.")
         else:
@@ -24,8 +23,6 @@ class Note:
 
     def remove_tag(self, tag: str):
         normalized_tag = self.normalize_tag(tag)
-        if not normalized_tag:
-            raise ValueError("Tag name cannot be empty.")
         if normalized_tag in self.tags:
             self.tags.remove(normalized_tag)
         else:
@@ -33,13 +30,18 @@ class Note:
 
     @staticmethod
     def normalize_tag(tag: str) -> str:
-        tag = tag.strip().lstrip("#").strip().lower()
-        return tag
+        normalized_tag = tag.strip().lstrip("#").strip().lower()
+        if not normalized_tag:
+            raise ValueError("Tag cannot be empty.")
+        if not re.fullmatch(r"[\w-]+", normalized_tag):
+            raise ValueError("Tag must be a single word without spaces or commas.")
+        return normalized_tag
     
     def __str__(self):
         if not self.tags:
-            return f"ID:{self.id} {self.text}"
-        return f"ID:{self.id} {self.text} | Tags: {', '.join(self.tags)}"
+            return f"ID: {self.id} {self.text}"
+        formatted_tags = " ".join(f"#{tag}" for tag in self.tags)
+        return f"ID: {self.id} {self.text} | Tags: {formatted_tags}"
         
 
 
@@ -59,7 +61,7 @@ class NoteBook(UserDict):
 
     def delete(self, note_id: int):
         if note_id not in self.data:
-            raise ValueError(f"Note with ID:{note_id} not found.")
+            raise ValueError(f"Note with ID {note_id} not found.")
         del self.data[note_id]
 
     def search_by_text(self, query: str) -> list[Note]:
@@ -73,11 +75,9 @@ class NoteBook(UserDict):
     
     def search_by_tag(self, tag: str) -> list[Note]:
         normalized_tag = Note.normalize_tag(tag)
-        if not normalized_tag:
-            raise ValueError("Tag cannot be empty.")
         return [
             note for note in self.data.values()
-            if any(normalized_tag in t for t in note.tags)
+            if normalized_tag in note.tags
         ]
 
     def sort_by_tags(self) -> list[Note]:
@@ -92,4 +92,6 @@ class NoteBook(UserDict):
             parsed_id = int(raw_id)
         except ValueError:
             raise ValueError("Note ID must be a number")
+        if parsed_id < 1:
+            raise ValueError("Note ID must be a positive number")
         return parsed_id
