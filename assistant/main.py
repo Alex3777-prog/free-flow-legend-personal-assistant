@@ -149,6 +149,14 @@ def execute(
     return "Invalid command. Type 'help' to see available commands."
 
 
+def save(book: AddressBook, notebook: NoteBook) -> None:
+    """Save all data and report a failure instead of crashing."""
+    try:
+        save_data(book, notebook)
+    except OSError as error:
+        print(f"Failed to save data to {STORAGE_FILE}: {error}")
+
+
 def main() -> None:
     try:
         book, notebook = load_data()
@@ -159,35 +167,35 @@ def main() -> None:
 
     print("Welcome to the assistant bot!")
 
-    try:
-        while True:
-            try:
-                user_input = input("Enter a command: ")
-            except (KeyboardInterrupt, EOFError):
-                print("\nGood bye!")
-                break
-
-            command, *args = parse_input(user_input)
-
-            if not command:
-                continue
-            if command in EXIT_COMMANDS:
-                print("Good bye!")
-                break
-
-            try:
-                print(execute(command, args, book, notebook))
-            except KeyboardInterrupt:
-                print("\nOperation cancelled.")
-            except EOFError:
-                print("\nGood bye!")
-                break
-    finally:
-        # Persist all data on exit, including exception-driven exits.
+    while True:
         try:
-            save_data(book, notebook)
-        except OSError as error:
-            print(f"Failed to save data to {STORAGE_FILE}: {error}")
+            user_input = input("Enter a command: ")
+        except (KeyboardInterrupt, EOFError):
+            print("\nGood bye!")
+            break
+
+        command, *args = parse_input(user_input)
+
+        if not command:
+            continue
+        if command in EXIT_COMMANDS:
+            print("Good bye!")
+            break
+
+        try:
+            print(execute(command, args, book, notebook))
+        except KeyboardInterrupt:
+            print("\nOperation cancelled.")
+            continue
+        except EOFError:
+            print("\nGood bye!")
+            break
+
+        # Save after every command, so closing the terminal loses nothing.
+        save(book, notebook)
+
+    # Save again on a normal exit in case an earlier save failed.
+    save(book, notebook)
 
 
 if __name__ == "__main__":
