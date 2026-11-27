@@ -1,6 +1,10 @@
+from rich import box
+from rich.table import Table
+from rich.text import Text
+
 from .contacts import AddressBook, Record, UPCOMING_DAYS
 from .fields import Name, Address
-from .utils import input_error, check_args, ask
+from .utils import input_error, check_args, ask, render
 
 
 def get_record(book: AddressBook, name: str) -> Record:
@@ -66,8 +70,7 @@ def show_phone(args: list[str], book: AddressBook) -> str:
     record = get_record(book, name)
     if not record.phones:
         return "No phones specified."
-    phones = "; ".join(p.value for p in record.phones)
-    return f"{record.name.value}: {phones}"
+    return format_phones(record)
 
 
 @input_error
@@ -76,7 +79,7 @@ def show_all(args: list[str], book: AddressBook) -> str:
 
     if not book:
         return "No contacts."
-    return "\n".join(str(record) for record in book.values())
+    return format_contacts(list(book.values()))
 
 
 @input_error
@@ -110,7 +113,7 @@ def search_contacts(args: list[str], book: AddressBook) -> str:
     results = book.search(query)
     if not results:
         return "No matching contacts found."
-    return "\n".join(str(record) for record in results)
+    return format_contacts(results)
 
 
 @input_error
@@ -158,9 +161,7 @@ def birthdays(args: list[str], book: AddressBook) -> str:
     upcoming = book.get_upcoming_birthdays(days=days)
     if not upcoming:
         return f"No upcoming birthdays in the next {days} days."
-    return "\n".join(
-        f"{user['name']}: {user['congratulation_date']}" for user in upcoming
-    )
+    return format_birthdays(upcoming)
 
 
 @input_error
@@ -241,3 +242,52 @@ def show_address(args: list[str], book: AddressBook) -> str:
     if record.address is None:
         return "Address not specified."
     return f"{record.name.value}: {record.address}"
+
+
+def format_contacts(records: list[Record]) -> str:
+    table = Table(box=box.ROUNDED, show_lines=True)
+    table.add_column("Name", style="#67E8F9", overflow="fold")
+    table.add_column("Phones", style="#86EFAC", overflow="fold")
+    table.add_column("Birthday", style="#C4B5FD", overflow="fold")
+    table.add_column("Email", style="#FDE047", overflow="fold")
+    table.add_column("Address", style="bold cyan", overflow="fold")
+
+    for record in records:
+        phones = "\n".join(p.value for p in record.phones) or "-"
+        birthday = str(record.birthday) if record.birthday else "-"
+        email = str(record.email) if record.email else "-"
+        address = str(record.address) if record.address else "-"
+
+        table.add_row(
+            Text(record.name.value),
+            Text(phones),
+            Text(birthday),
+            Text(email),
+            Text(address),
+        )
+
+    return render(table)
+
+
+def format_phones(record: Record) -> str:
+    table = Table(title=Text(record.name.value), box=box.ROUNDED, show_lines=True)
+    table.add_column("Phones", style="#86EFAC", overflow="fold")
+
+    for phone in record.phones:
+        table.add_row(Text(phone.value))
+
+    return render(table)
+
+
+def format_birthdays(upcoming: list[dict[str, str]]) -> str:
+    table = Table(box=box.ROUNDED, show_lines=True)
+    table.add_column("Name", style="#67E8F9", overflow="fold")
+    table.add_column("Birthday", style="#C4B5FD", overflow="fold")
+
+    for user in upcoming:
+        table.add_row(
+            Text(user["name"]),
+            Text(user["congratulation_date"]),
+        )
+
+    return render(table)
