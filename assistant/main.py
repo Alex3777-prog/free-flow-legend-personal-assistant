@@ -1,6 +1,7 @@
 from .utils import parse_input
-from .storage import save_data, load_data
+from .storage import save_data, load_data, STORAGE_FILE
 from .contacts import AddressBook
+from .notes import NoteBook
 from .contact_commands import (
     add_contact,
     change_contact,
@@ -22,6 +23,17 @@ from .contact_commands import (
     change_address,
     show_address,
     remove_address,
+)
+from .note_commands import (
+    add_note,
+    edit_note,
+    delete_note,
+    show_all_notes,
+    search_notes,
+    add_tag,
+    remove_tag,
+    search_by_tag,
+    sort_notes_by_tag,
 )
 
 
@@ -61,11 +73,24 @@ Address:
   show-address <name>                 Show contact's address
   remove-address <name>               Remove an address
 
-Names can contain spaces. Examples:
+Notes:
+  add-note <text>                     Add a note
+  edit-note <id> <text>               Replace a note's text
+  delete-note <id>                    Delete a note
+  all-notes                           Show all notes
+  search-notes <query>                Search notes by text
+  add-tag <id> <tag>                  Add a tag to a note
+  remove-tag <id> <tag>               Remove a tag from a note
+  search-tag <tag>                    Show notes with a tag
+  sort-notes                          Show notes sorted by tags
+
+Examples (names can contain spaces):
   add Alex Smith 0123456789
   add-birthday Alex Smith 15.06.2004
   add-address Alex Smith
   birthdays 14
+  add-note Buy milk tomorrow
+  add-tag 1 shopping
 
 Ctrl+C cancels an active command or exits at the main prompt.
 Ctrl+D exits the application."""
@@ -98,22 +123,38 @@ CONTACT_COMMANDS = {
     "remove-address": remove_address,
 }
 
+NOTE_COMMANDS = {
+    "add-note": add_note,
+    "edit-note": edit_note,
+    "delete-note": delete_note,
+    "all-notes": show_all_notes,
+    "search-notes": search_notes,
+    "add-tag": add_tag,
+    "remove-tag": remove_tag,
+    "search-tag": search_by_tag,
+    "sort-notes": sort_notes_by_tag,
+}
 
-def execute(command: str, args: list[str], book: AddressBook) -> str:
+
+def execute(
+    command: str, args: list[str], book: AddressBook, notebook: NoteBook
+) -> str:
     """Route a command to its handler and return the text to print."""
     if command in GENERAL_COMMANDS:
         return GENERAL_COMMANDS[command]()
     if command in CONTACT_COMMANDS:
         return CONTACT_COMMANDS[command](args, book)
+    if command in NOTE_COMMANDS:
+        return NOTE_COMMANDS[command](args, notebook)
     return "Invalid command. Type 'help' to see available commands."
 
 
 def main() -> None:
     try:
-        book = load_data()
+        book, notebook = load_data()
     except Exception as error:
         # Abort without saving so a damaged file is not overwritten.
-        print(f"Failed to load data: {error}")
+        print(f"Failed to load data from {STORAGE_FILE}: {error}")
         return
 
     print("Welcome to the assistant bot!")
@@ -135,18 +176,18 @@ def main() -> None:
                 break
 
             try:
-                print(execute(command, args, book))
+                print(execute(command, args, book, notebook))
             except KeyboardInterrupt:
                 print("\nOperation cancelled.")
             except EOFError:
                 print("\nGood bye!")
                 break
     finally:
-        # Persist the address book on exit, including exception-driven exits.
+        # Persist all data on exit, including exception-driven exits.
         try:
-            save_data(book)
+            save_data(book, notebook)
         except OSError as error:
-            print(f"Failed to save data: {error}")
+            print(f"Failed to save data to {STORAGE_FILE}: {error}")
 
 
 if __name__ == "__main__":
