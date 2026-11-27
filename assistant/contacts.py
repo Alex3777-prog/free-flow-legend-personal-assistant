@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import UserDict
 from datetime import date
 from .fields import Name, Phone, Birthday, Email, Address, DATE_FORMAT

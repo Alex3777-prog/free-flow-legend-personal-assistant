@@ -55,12 +55,13 @@ Tags are case-insensitive, and the `#` prefix is optional: `#Python`, `python`, 
 - **Pickle** — serialization and deserialization of application data.
 - **pathlib** — cross-platform file path handling.
 - **Rich** — tables in the terminal.
+- **setuptools** — packaging, so the application can be installed as a command.
 
 ## Requirements
 
-- Python 3.10 or later.
+- Python 3.9 or later.
 - Git — required to clone the repository.
-- The `rich` package, installed from `requirements.txt` (see step 6 below).
+- The `rich` package, installed automatically in step 6 below.
 
 ## Installation and Setup
 
@@ -90,7 +91,7 @@ macOS / Linux:
 python3 --version
 ```
 
-Python 3.10 or later is required.
+Python 3.9 or later is required.
 
 **4. Create a virtual environment**
 
@@ -128,23 +129,31 @@ source .venv/bin/activate
 
 After activation, use `python` to run commands inside the virtual environment on all three operating systems.
 
-**6. Install the dependencies**
+**6. Install the application**
+
+Run this in the project directory:
 
 ```bash
-pip install -r requirements.txt
+pip install .
 ```
 
-Do not skip this step: without it, the application stops at startup with `ModuleNotFoundError: No module named 'rich'`.
+This installs the application as a Python package together with its dependency (`rich`) and adds the `personal-assistant` command.
+
+To use the command without activating a virtual environment, you can install it globally with [pipx](https://pipx.pypa.io/) instead of steps 4–6:
+
+```bash
+pipx install .
+```
 
 ## Running the Application
 
-Make sure the virtual environment is activated and the terminal is in the project root directory. Activate it again in every new terminal window.
-
-Run the application:
+Make sure the virtual environment is activated (activate it again in every new terminal window). Then start the application from any directory:
 
 ```bash
-python -m assistant.main
+personal-assistant
 ```
+
+Alternatively, without installing the package: run `pip install -r requirements.txt` and then `python -m assistant.main` from the project root directory.
 
 The application starts in the terminal and displays a welcome message. Enter commands at the prompt to interact with the assistant.
 
@@ -309,6 +318,7 @@ free-flow-legend-personal-assistant/
 │   └── main.py
 │
 ├── README.md
+├── pyproject.toml
 ├── requirements.txt
 └── .gitignore
 ```
