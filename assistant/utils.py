@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import wraps
+from rich.console import Console
 
 
 def input_error(func):
@@ -60,3 +61,12 @@ def ask(
                 continue
 
         return value
+
+
+console = Console()
+
+
+def render(renderable) -> str:
+    with console.capture() as capture:
+        console.print(renderable)
+    return capture.get().rstrip("\n")

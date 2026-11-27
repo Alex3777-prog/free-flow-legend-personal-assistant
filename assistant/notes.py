@@ -1,6 +1,7 @@
 import re
 from collections import UserDict
 
+
 class Note:
     def __init__(self, note_id: int, text: str):
         self.text = text.strip()
@@ -34,7 +35,7 @@ class Note:
         if not normalized_tag:
             raise ValueError("Tag cannot be empty.")
         if not re.fullmatch(r"[\w-]+", normalized_tag):
-            raise ValueError("Tag must be a single word without spaces or commas.")
+            raise ValueError("Tag can contain only letters, digits, underscores, and hyphens.")
         return normalized_tag
     
     def __str__(self):
@@ -56,7 +57,7 @@ class NoteBook(UserDict):
         self.next_id += 1
         return note
 
-    def find(self, note_id: int) -> Note | None:        #change here
+    def find(self, note_id: int) -> Note | None:
         return self.data.get(note_id)
 
     def delete(self, note_id: int):
@@ -91,7 +92,7 @@ class NoteBook(UserDict):
         try:
             parsed_id = int(raw_id)
         except ValueError:
-            raise ValueError("Note ID must be a number")
+            raise ValueError("Note ID must be a number.")
         if parsed_id < 1:
-            raise ValueError("Note ID must be a positive number")
+            raise ValueError("Note ID must be a positive number.")
         return parsed_id

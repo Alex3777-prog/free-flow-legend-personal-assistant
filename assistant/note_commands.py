@@ -1,6 +1,9 @@
-from .utils import input_error, check_args
-from .notes import Note, NoteBook
+from rich import box
+from rich.table import Table
+from rich.text import Text
 
+from .notes import Note, NoteBook
+from .utils import check_args, input_error, render
 
 
 def get_note(raw_id: str, notebook: NoteBook) -> Note:
@@ -103,4 +106,16 @@ def sort_notes_by_tag(args: list[str], notebook: NoteBook) -> str:
 
 
 def format_notes(notes: list[Note]) -> str:
-    return "\n".join(str(note) for note in notes)
+    table = Table(box=box.ROUNDED, show_lines=True)
+    table.add_column("ID", style="bold cyan", overflow=True)
+    table.add_column("Text", overflow="fold")
+    table.add_column("Tags", style="yellow", overflow="fold")
+
+    for note in notes:
+        tags_str = " ".join(f"#{tag}" for tag in note.tags) if note.tags else "-"
+        table.add_row(
+            Text(str(note.id)),
+            Text(note.text),
+            Text(tags_str),
+        )
+    return render(table)
