@@ -1,3 +1,9 @@
+"""Entry point: the command loop, command routing, and the help text.
+
+Loads the data at startup, sends each command to its handler, prints the
+result, and saves the data after every command.
+"""
+
 from .utils import parse_input
 from .storage import save_data, load_data, STORAGE_FILE
 from .contacts import AddressBook
@@ -39,6 +45,8 @@ from .note_commands import (
 
 
 EXIT_COMMANDS = ("exit", "close")
+
+# Keep HELP_TEXT in sync with the command tables below.
 
 HELP_TEXT = """\
 General:
@@ -97,6 +105,8 @@ Examples (names can contain spaces):
 Ctrl+C cancels an active command or exits at the main prompt.
 Ctrl+D exits the application."""
 
+# Command name -> handler. Contact handlers get the AddressBook,
+# note handlers get the NoteBook.
 GENERAL_COMMANDS = {
     "hello": lambda: "How can I help you?",
     "help": lambda: HELP_TEXT,
@@ -161,6 +171,7 @@ def save(book: AddressBook, notebook: NoteBook) -> None:
 
 
 def main() -> None:
+    """Run the assistant: load data, then handle commands until exit."""
     try:
         book, notebook = load_data()
     except Exception as error:
