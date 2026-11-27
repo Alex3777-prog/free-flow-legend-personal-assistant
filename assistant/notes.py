@@ -9,7 +9,7 @@ class Note:
         self.tags: list[str] = []
         if not self.text:
             raise ValueError("Note text cannot be empty.")
-    
+
     def edit_text(self, new_text: str):
         if not new_text.strip():
             raise ValueError("Note text cannot be empty.")
@@ -35,22 +35,24 @@ class Note:
         if not normalized_tag:
             raise ValueError("Tag cannot be empty.")
         if not re.fullmatch(r"[\w-]+", normalized_tag):
-            raise ValueError("Tag can contain only letters, digits, underscores, and hyphens.")
+            raise ValueError(
+                "Tag can contain only letters, digits, underscores, "
+                "and hyphens."
+            )
         return normalized_tag
-    
+
     def __str__(self):
         if not self.tags:
             return f"ID: {self.id} {self.text}"
         formatted_tags = " ".join(f"#{tag}" for tag in self.tags)
         return f"ID: {self.id} {self.text} | Tags: {formatted_tags}"
-        
 
 
 class NoteBook(UserDict):
     def __init__(self):
         super().__init__()
         self.next_id = 1
-    
+
     def add_note(self, text: str) -> Note:
         note = Note(self.next_id, text)
         self.data[note.id] = note
@@ -73,7 +75,7 @@ class NoteBook(UserDict):
             note for note in self.data.values()
             if cleaned_query in note.text.lower()
         ]
-    
+
     def search_by_tag(self, tag: str) -> list[Note]:
         normalized_tag = Note.normalize_tag(tag)
         return [
