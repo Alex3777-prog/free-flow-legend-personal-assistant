@@ -127,14 +127,18 @@ class AddressBook(UserDict):
         validated_name = Name(new_name)
         existing = self.find(validated_name.value)
         if existing is not None and existing is not record:
-            raise ValueError(f"Contact '{validated_name.value}' already exists.")
+            raise ValueError(
+                f"Contact '{validated_name.value}' already exists."
+            )
 
         del self.data[record.name.value]
         record.name = validated_name
         self.data[record.name.value] = record
 
     def search(self, query: str) -> list[Record]:
-        return [record for record in self.data.values() if record.matches(query)]
+        return [
+            record for record in self.data.values() if record.matches(query)
+        ]
 
     def get_upcoming_birthdays(
         self, days: int = UPCOMING_DAYS, today: date | None = None

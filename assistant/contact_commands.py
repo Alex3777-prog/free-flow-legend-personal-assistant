@@ -18,7 +18,7 @@ def get_record(book: AddressBook, name: str) -> Record:
 def parse_name_and_values(
     args: list[str], trailing_count: int, usage: str
 ) -> tuple[str, ...]:
-    """Extract multi-word contact name and `trailing_count` single-token values."""
+    """Split args into a multi-word name and `trailing_count` values."""
     if len(args) < trailing_count + 1:
         raise ValueError(f"Invalid number of arguments. Usage: {usage}")
 
@@ -276,7 +276,9 @@ def format_contacts(records: list[Record]) -> str:
 
 
 def format_phones(record: Record) -> str:
-    table = Table(title=Text(record.name.value), box=box.ROUNDED, show_lines=True)
+    table = Table(
+        title=Text(record.name.value), box=box.ROUNDED, show_lines=True
+    )
     table.add_column("Phones", overflow="fold")
 
     for phone in record.phones:

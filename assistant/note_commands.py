@@ -114,7 +114,7 @@ def format_notes(notes: list[Note]) -> str:
     table.add_column("Tags", style="yellow", overflow="fold")
 
     for note in notes:
-        tags_str = " ".join(f"#{tag}" for tag in note.tags) if note.tags else "-"
+        tags_str = " ".join(f"#{tag}" for tag in note.tags) or "-"
         table.add_row(
             Text(str(note.id)),
             Text(note.text),
