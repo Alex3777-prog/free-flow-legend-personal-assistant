@@ -91,7 +91,7 @@ macOS / Linux:
 python3 --version
 ```
 
-Python 3.9 or later is required.
+Python 3.9 or later is required. On Windows, if the `py` command is not found, use `python` instead of `py` in the commands below.
 
 **4. Create a virtual environment**
 
@@ -112,6 +112,13 @@ python3 -m venv .venv
 Windows — PowerShell:
 
 ```powershell
+.venv\Scripts\Activate.ps1
+```
+
+If PowerShell shows "running scripts is disabled on this system", allow scripts for the current window only and activate again:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .venv\Scripts\Activate.ps1
 ```
 
@@ -143,6 +150,12 @@ To use the command without activating a virtual environment, you can install it 
 
 ```bash
 pipx install .
+```
+
+You can also install the application directly from GitHub without cloning the repository (Git is required). Run this inside an activated virtual environment:
+
+```bash
+pip install git+https://github.com/Alex3777-prog/free-flow-legend-personal-assistant.git
 ```
 
 ## Running the Application
