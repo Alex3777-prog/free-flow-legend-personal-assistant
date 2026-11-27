@@ -1,4 +1,4 @@
-from .utils import input_error, parse_input, check_args
+from .utils import input_error, check_args
 from .notes import Note, NoteBook
 
 
@@ -10,6 +10,7 @@ def get_note(raw_id: str, notebook: NoteBook) -> Note:
         raise ValueError(f"Note with ID {note_id} not found.")
     return note
 
+
 @input_error
 def add_note(args: list[str], notebook: NoteBook) -> str:
     if not args:
@@ -17,6 +18,14 @@ def add_note(args: list[str], notebook: NoteBook) -> str:
     note_text = " ".join(args)
     note = notebook.add_note(note_text)
     return f"Note added ID: {note.id}."
+
+
+@input_error
+def show_note(args: list[str], notebook: NoteBook) -> str:
+    check_args(args, 1, "show-note <id>")
+    note = get_note(args[0], notebook)
+    return format_notes([note])
+
 
 @input_error
 def edit_note(args: list[str], notebook: NoteBook) -> str:
@@ -27,12 +36,14 @@ def edit_note(args: list[str], notebook: NoteBook) -> str:
     note.edit_text(new_text)
     return f"Note {note.id} updated."
 
+
 @input_error
 def delete_note(args: list[str], notebook: NoteBook) -> str:
     check_args(args, 1, "delete-note <id>")
     note_id = NoteBook.parse_note_id(args[0])
     notebook.delete(note_id)
     return f"Note {note_id} deleted."
+
 
 @input_error
 def show_all_notes(args: list[str], notebook: NoteBook) -> str:
@@ -53,6 +64,8 @@ def search_notes(args: list[str], notebook: NoteBook) -> str:
     else:
         return format_notes(results)
 
+
+
 @input_error
 def add_tag(args: list[str], notebook: NoteBook) -> str:
     check_args(args, 2, "add-tag <id> <tag>")
@@ -60,12 +73,14 @@ def add_tag(args: list[str], notebook: NoteBook) -> str:
     note.add_tag(args[1])
     return "Tag added."
 
+
 @input_error
 def remove_tag(args: list[str], notebook: NoteBook) -> str:
     check_args(args, 2, "remove-tag <id> <tag>")
     note = get_note(args[0], notebook)
     note.remove_tag(args[1])
     return "Tag removed."
+
 
 @input_error
 def search_by_tag(args: list[str], notebook: NoteBook) -> str:
@@ -76,13 +91,15 @@ def search_by_tag(args: list[str], notebook: NoteBook) -> str:
     else:
         return format_notes(results)
 
+
 @input_error
 def sort_notes_by_tag(args: list[str], notebook: NoteBook) -> str:
     check_args(args, 0, "sort-notes")
     if not notebook:
-        return "No notes"
+        return "Notebook is empty."
     else:
         return format_notes(notebook.sort_by_tags())
+
 
 
 def format_notes(notes: list[Note]) -> str:
