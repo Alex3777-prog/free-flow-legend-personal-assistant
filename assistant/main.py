@@ -4,11 +4,24 @@ from .contacts import AddressBook
 from .contact_commands import (
     add_contact,
     change_contact,
+    remove_phone,
     show_phone,
     show_all,
+    search_contacts,
+    rename_contact,
+    delete_contact,
     add_birthday,
     show_birthday,
+    remove_birthday,
     birthdays,
+    add_email,
+    change_email,
+    show_email,
+    remove_email,
+    add_address,
+    change_address,
+    show_address,
+    remove_address,
 )
 
 
@@ -23,15 +36,36 @@ General:
 Contacts:
   add <name> <phone>                  Add a contact or a new phone to it
   change <name> <old> <new>           Replace a phone number
+  remove-phone <name> <phone>         Remove a phone number
   phone <name>                        Show contact's phones
   all                                 Show all contacts
+  search-contact <query>              Search by name, phone, email or address
+  rename-contact <name>               Rename a contact (asks for the new name)
+  delete-contact <name>               Delete a contact
+
+Birthdays:
   add-birthday <name> <DD.MM.YYYY>    Add or update a birthday
   show-birthday <name>                Show contact's birthday
-  birthdays                           Show birthdays in the next 7 days
+  remove-birthday <name>              Remove a birthday
+  birthdays [days]                    Birthdays in the next N days (default 7)
 
-Examples:
-  add Alex 0123456789
-  add-birthday Alex 15.06.2004
+Email:
+  add-email <name> <email>            Add or update an email
+  change-email <name> <email>         Change an existing email
+  show-email <name>                   Show contact's email
+  remove-email <name>                 Remove an email
+
+Address:
+  add-address <name>                  Add or update an address (asks for it)
+  change-address <name>               Change an existing address (asks for it)
+  show-address <name>                 Show contact's address
+  remove-address <name>               Remove an address
+
+Names can contain spaces. Examples:
+  add Alex Smith 0123456789
+  add-birthday Alex Smith 15.06.2004
+  add-address Alex Smith
+  birthdays 14
 
 Ctrl+C cancels an active command or exits at the main prompt.
 Ctrl+D exits the application."""
@@ -44,11 +78,24 @@ GENERAL_COMMANDS = {
 CONTACT_COMMANDS = {
     "add": add_contact,
     "change": change_contact,
+    "remove-phone": remove_phone,
     "phone": show_phone,
     "all": show_all,
+    "search-contact": search_contacts,
+    "rename-contact": rename_contact,
+    "delete-contact": delete_contact,
     "add-birthday": add_birthday,
     "show-birthday": show_birthday,
+    "remove-birthday": remove_birthday,
     "birthdays": birthdays,
+    "add-email": add_email,
+    "change-email": change_email,
+    "show-email": show_email,
+    "remove-email": remove_email,
+    "add-address": add_address,
+    "change-address": change_address,
+    "show-address": show_address,
+    "remove-address": remove_address,
 }
 
 
