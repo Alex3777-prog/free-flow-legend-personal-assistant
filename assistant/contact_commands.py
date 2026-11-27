@@ -8,10 +8,10 @@ from .utils import input_error, check_args, ask, render
 
 
 def get_record(book: AddressBook, name: str) -> Record:
-    """Return the contact or raise KeyError for input_error to report."""
+    """Return the contact or raise ValueError for input_error to report."""
     record = book.find(name)
     if record is None:
-        raise KeyError(name)
+        raise ValueError("Contact not found.")
     return record
 
 
@@ -95,10 +95,7 @@ def delete_contact(args: list[str], book: AddressBook) -> str:
 def rename_contact(args: list[str], book: AddressBook) -> str:
     (old_name,) = parse_name_and_values(args, 0, "rename-contact <name>")
 
-    record = book.find(old_name)
-    if record is None:
-        raise ValueError("Contact not found.")
-
+    record = get_record(book, old_name)
     new_name = ask("New name", validator=Name, required=True)
     book.rename_record(record.name.value, new_name)
     return "Contact renamed."

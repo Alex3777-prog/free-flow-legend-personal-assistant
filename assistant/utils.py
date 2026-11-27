@@ -12,9 +12,6 @@ def input_error(func):
             return func(*args, **kwargs)
         except ValueError as error:
             return str(error)
-        except KeyError:
-            # Raised by get_record() in contact_commands.py.
-            return "Contact not found."
 
     return inner
 

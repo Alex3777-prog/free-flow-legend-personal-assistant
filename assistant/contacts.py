@@ -152,14 +152,14 @@ class AddressBook(UserDict):
             birthday = record.birthday.value.date()
             next_birthday = self._next_birthday(birthday, today)
             if 0 <= (next_birthday - today).days <= days:
-                upcoming.append(
-                    {
-                        "name": record.name.value,
-                        "congratulation_date": next_birthday.strftime(DATE_FORMAT),
-                    }
-                )
+                upcoming.append((next_birthday, record.name.value))
 
-        return upcoming
+        # Soonest first; contacts with the same date go in name order.
+        upcoming.sort(key=lambda item: (item[0], item[1].lower()))
+        return [
+            {"name": name, "congratulation_date": day.strftime(DATE_FORMAT)}
+            for day, name in upcoming
+        ]
 
     @staticmethod
     def _birthday_in_year(birthday: date, year: int) -> date:
