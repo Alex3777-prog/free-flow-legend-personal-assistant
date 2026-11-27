@@ -92,7 +92,7 @@ class NoteBook(UserDict):
         try:
             parsed_id = int(raw_id)
         except ValueError:
-            raise ValueError("Note ID must be a number.")
+            raise ValueError("Note ID must be a positive number.") from None
         if parsed_id < 1:
             raise ValueError("Note ID must be a positive number.")
         return parsed_id

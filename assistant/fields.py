@@ -38,7 +38,10 @@ class Birthday(Field):
         try:
             birthday = datetime.strptime(value, DATE_FORMAT)
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY") from None
+            # The format is right, but the date does not exist (e.g. 31.02).
+            if re.fullmatch(r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}", value):
+                raise ValueError(f"Date {value} does not exist.") from None
+            raise ValueError("Invalid date format. Use DD.MM.YYYY.") from None
         if birthday > datetime.today():
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday)
